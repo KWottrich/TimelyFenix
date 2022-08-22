@@ -89,17 +89,9 @@ class TimelyFenixView extends WatchUi.WatchFace {
     
     function viewUpdateWeather() as Void {
     	var weather = Weather.getCurrentConditions();
-    	var tempView = View.findDrawableById("TempLabel") as Text;
-    	var precipView = View.findDrawableById("PrecipLabel") as Text;
-    	if (weather == null) {
-    		weatherChar = "A";
-    	    tempView.setText("--" + degreesSymbol + "F");
-    	    precipView.setText("--%");
-    	    return;
-    	}
     	
-    	if (weather.temperature == null) {
-    		System.println("no temperature data");
+    	var tempView = View.findDrawableById("TempLabel") as Text;
+    	if (weather == null || weather.temperature == null) {
     		tempView.setText("--" + degreesSymbol + "F");
     	} else {
     		// Weather data always comes as Celsius
@@ -107,15 +99,15 @@ class TimelyFenixView extends WatchUi.WatchFace {
         	tempView.setText(temperature + degreesSymbol + "F");
     	}
     	
-    	if (weather.precipitationChance == null) {
-    		System.println("no precipitation data");
+    	var precipView = View.findDrawableById("PrecipLabel") as Text;
+    	if (weather == null || weather.precipitationChance == null) {
     	    precipView.setText("--%");
     	} else {
         	precipView.setText(weather.precipitationChance + "%");
     	}
     	
-    	if (weather.condition == null) {
-    		System.println("no condition data");
+    	if (weather == null || weather.condition == null) {
+    		// Missing Weather icon
     	    weatherChar = "A";
     	} else {
     		mapWeatherCondToIcon(weather);
@@ -349,7 +341,7 @@ class TimelyFenixView extends WatchUi.WatchFace {
     }
     
     function drawTime(dc as Dc) as Void {
-    	dc.setColor(Graphics.COLOR_RED, Graphics.COLOR_BLACK);
+    	dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_BLACK);
     	dc.fillRectangle(15, 80, 177, 65);
     	View.findDrawableById("TimeLabel").draw(dc);
     }
@@ -366,7 +358,7 @@ class TimelyFenixView extends WatchUi.WatchFace {
     
     function reDrawWeather(dc as Dc) as Void {
     	// Clear weather widget area
-    	dc.setColor(Graphics.COLOR_BLUE, Graphics.COLOR_BLACK);
+    	dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_BLACK);
     	dc.fillRectangle(80, 0, 160, 73);
     	drawWeatherIcon(dc);
     	drawWeatherValues(dc);
