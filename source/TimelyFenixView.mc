@@ -11,8 +11,9 @@ class TimelyFenixView extends WatchUi.WatchFace {
 	var degreesSymbol as String;
 	var calendarDays;
 	var dayOfWeek as Integer;
-	var whiteBlock;
 	var initialDraw as Boolean;
+	var weatherFont as FontResource;
+	var weatherChar as String;
 	
 	// Cached settings
 	var is24h as Boolean;
@@ -39,7 +40,7 @@ class TimelyFenixView extends WatchUi.WatchFace {
     // Load your resources here
     function onLayout(dc as Dc) as Void {
         degreesSymbol = WatchUi.loadResource(Rez.Strings.DegreesSymbol);
-        whiteBlock = WatchUi.loadResource(Rez.Drawables.WhiteBlock);
+        weatherFont = WatchUi.loadResource(Rez.Fonts.WeatherIcons);
         setLayout(Rez.Layouts.WatchFace(dc));
     }
 
@@ -91,6 +92,7 @@ class TimelyFenixView extends WatchUi.WatchFace {
     	var tempView = View.findDrawableById("TempLabel") as Text;
     	var precipView = View.findDrawableById("PrecipLabel") as Text;
     	if (weather == null) {
+    		weatherChar = "A";
     	    tempView.setText("--" + degreesSymbol + "F");
     	    precipView.setText("--%");
     	    return;
@@ -110,6 +112,114 @@ class TimelyFenixView extends WatchUi.WatchFace {
     	    precipView.setText("--%");
     	} else {
         	precipView.setText(weather.precipitationChance + "%");
+    	}
+    	
+    	if (weather.condition == null) {
+    		System.println("no condition data");
+    	    weatherChar = "A";
+    	} else {
+    		mapWeatherCondToIcon(weather);
+    	}
+    }
+    
+    function mapWeatherCondToIcon(weather as CurrentConditions) as Void {
+    	var clockTime as ClockTime;
+    	switch (weather.condition) {
+    		case Weather.CONDITION_UNKNOWN:
+    		default:
+    			weatherChar = "A";
+    			return;
+    		case Weather.CONDITION_HAIL:
+    			weatherChar = "B";
+    			return;
+    		case Weather.CONDITION_CHANCE_OF_SHOWERS:
+    		case Weather.CONDITION_CLOUDY_CHANCE_OF_RAIN:
+    		case Weather.CONDITION_DRIZZLE:
+    		case Weather.CONDITION_HEAVY_RAIN:
+    		case Weather.CONDITION_HEAVY_SHOWERS:
+    		case Weather.CONDITION_LIGHT_RAIN:
+    		case Weather.CONDITION_LIGHT_SHOWERS:
+    		case Weather.CONDITION_RAIN:
+    		case Weather.CONDITION_SCATTERED_SHOWERS:
+    		case Weather.CONDITION_SHOWERS:
+    			weatherChar = "C";
+    			return;
+			case Weather.CONDITION_FOG:
+    		case Weather.CONDITION_HAZE:
+    		case Weather.CONDITION_HAZY:
+    		case Weather.CONDITION_MIST:
+    		case Weather.CONDITION_SAND:
+    		case Weather.CONDITION_SMOKE:
+    		case Weather.CONDITION_VOLCANIC_ASH:
+    			weatherChar = "D";
+				return;
+			case Weather.CONDITION_CHANCE_OF_THUNDERSTORMS:
+    		case Weather.CONDITION_SCATTERED_THUNDERSTORMS:
+    		case Weather.CONDITION_THUNDERSTORMS:
+    			weatherChar = "E";
+    			return;
+    		case Weather.CONDITION_CLEAR:
+    			clockTime = System.getClockTime() as ClockTime;
+    			if (clockTime.hour >= 7 && clockTime.hour <= 20) {
+    				// Daytime
+    				weatherChar = "L";
+    			} else {
+    				// Nighttime
+    				weatherChar = "F";
+    			}
+    			return;
+    		case Weather.CONDITION_CLOUDY:
+    		case Weather.CONDITION_MOSTLY_CLOUDY:
+    		case Weather.CONDITION_THIN_CLOUDS:
+    		case Weather.CONDITION_UNKNOWN_PRECIPITATION:
+    			weatherChar = "G";
+    			return;
+    		case Weather.CONDITION_FAIR:
+    		case Weather.CONDITION_MOSTLY_CLEAR:
+    		case Weather.CONDITION_PARTLY_CLEAR:
+    		case Weather.CONDITION_PARTLY_CLOUDY:
+    			clockTime = System.getClockTime() as ClockTime;
+    			if (clockTime.hour >= 7 && clockTime.hour <= 20) {
+    				// Daytime
+    				weatherChar = "H";
+    			} else {
+    				// Nighttime
+    				weatherChar = "I";
+    			}
+    			return;
+			case Weather.CONDITION_CHANCE_OF_RAIN_SNOW:
+    		case Weather.CONDITION_CLOUDY_CHANCE_OF_RAIN_SNOW:
+    		case Weather.CONDITION_FREEZING_RAIN:
+    		case Weather.CONDITION_HEAVY_RAIN_SNOW:
+    		case Weather.CONDITION_LIGHT_RAIN_SNOW:
+    		case Weather.CONDITION_SLEET:
+    		case Weather.CONDITION_WINTRY_MIX:
+    			weatherChar = "J";
+    			return;
+			case Weather.CONDITION_ICE:
+				weatherChar = "K";
+				return;
+			case Weather.CONDITION_HURRICANE:
+    		case Weather.CONDITION_TORNADO:
+    		case Weather.CONDITION_TROPICAL_STORM:
+    			weatherChar = "M";
+    			return;
+			case Weather.CONDITION_DUST:
+    		case Weather.CONDITION_SANDSTORM:
+    		case Weather.CONDITION_SQUALL:
+    		case Weather.CONDITION_WINDY:
+    			weatherChar = "N";
+    			return;
+			case Weather.CONDITION_CHANCE_OF_SNOW:
+    		case Weather.CONDITION_CLOUDY_CHANCE_OF_SNOW:
+    		case Weather.CONDITION_FLURRIES:
+    		case Weather.CONDITION_HEAVY_SNOW:
+    		case Weather.CONDITION_ICE_SNOW:
+    		case Weather.CONDITION_LIGHT_SNOW:
+    		case Weather.CONDITION_RAIN_SNOW:
+    		case Weather.CONDITION_SNOW:
+    			weatherChar = "O";
+    			return;
     	}
     }
     
@@ -240,13 +350,13 @@ class TimelyFenixView extends WatchUi.WatchFace {
     
     function drawTime(dc as Dc) as Void {
     	dc.setColor(Graphics.COLOR_RED, Graphics.COLOR_BLACK);
-    	dc.fillRectangle(110, 80, 82, 65);
+    	dc.fillRectangle(15, 80, 177, 65);
     	View.findDrawableById("TimeLabel").draw(dc);
     }
     
     function drawWeatherIcon(dc as Dc) as Void {
-    	// Weather icon placeholder
-        dc.drawBitmap(85, 5, whiteBlock);
+    	dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+    	dc.drawText(113, 6, weatherFont, weatherChar, Graphics.TEXT_JUSTIFY_CENTER);
     }
     
     function drawWeatherValues(dc as Dc) as Void {

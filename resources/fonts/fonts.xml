@@ -1,0 +1,3 @@
+<resources>
+	<font id="WeatherIcons" filename="weatherIcons.fnt" antialias="true" />
+</resources>
