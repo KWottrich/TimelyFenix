@@ -1,0 +1,7 @@
+<resources>
+    <bitmap id="WhiteBlock" filename="whiteBlock.bmp" >
+    	<palette disableTransparency="true">
+    		<color>FFFFFF</color>
+    	</palette>
+    </bitmap>
+</resources>

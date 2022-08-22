@@ -1,0 +1,33 @@
+<settings>
+
+    <setting propertyKey="@Properties.BackgroundColor" title="@Strings.BackgroundColorTitle">
+        <settingConfig type="list">
+            <listEntry value="0x000000">@Strings.ColorBlack</listEntry>
+            <listEntry value="0x555555">@Strings.ColorDarkGray</listEntry>
+            <listEntry value="0xAAAAAA">@Strings.ColorLightGray</listEntry>
+            <listEntry value="0xFFFFFF">@Strings.ColorWhite</listEntry>
+        </settingConfig>
+    </setting>
+
+    <setting propertyKey="@Properties.ForegroundColor" title="@Strings.ForegroundColorTitle">
+        <settingConfig type="list">
+            <listEntry value="0x000000">@Strings.ColorBlack</listEntry>
+            <listEntry value="0x0000FF">@Strings.ColorBlue</listEntry>
+            <listEntry value="0xFF0000">@Strings.ColorRed</listEntry>
+            <listEntry value="0xFFFFFF">@Strings.ColorWhite</listEntry>
+        </settingConfig>
+    </setting>
+    
+    <setting propertyKey="@Properties.WeatherUpdatePeriod" title="@Strings.ForegroundColorTitle">
+        <settingConfig type="list">
+            <listEntry value="1">@Strings.Weather1Minute</listEntry>
+            <listEntry value="5">@Strings.Weather5Minutes</listEntry>
+            <listEntry value="10">@Strings.Weather10Minutes</listEntry>
+            <listEntry value="15">@Strings.Weather15Minutes</listEntry>
+            <listEntry value="20">@Strings.Weather20Minutes</listEntry>
+            <listEntry value="30">@Strings.Weather30Minutes</listEntry>
+            <listEntry value="60">@Strings.Weather60Minutes</listEntry>
+        </settingConfig>
+    </setting>
+
+</settings>

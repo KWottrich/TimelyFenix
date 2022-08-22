@@ -1,0 +1,23 @@
+<strings>
+    <string id="AppName">TimelyFenix</string>
+
+    <string id="BackgroundColorTitle">Background Color</string>
+    <string id="ForegroundColorTitle">Foreground Color</string>
+
+    <string id="ColorBlack">Black</string>
+    <string id="ColorDarkGray">Dark Gray</string>
+    <string id="ColorLightGray">Light Gray</string>
+    <string id="ColorWhite">White</string>
+    <string id="ColorBlue">Blue</string>
+    <string id="ColorRed">Red</string>
+    
+    <string id="DegreesSymbol">°</string>
+    
+	<string id="Weather1Minute">Every Minute</string>
+	<string id="Weather5Minutes">Every 5 Minutes</string>
+	<string id="Weather10Minutes">Every 10 Minutes</string>
+	<string id="Weather15Minutes">Every 15 Minutes</string>
+	<string id="Weather20Minutes">Every 20 Minutes</string>
+	<string id="Weather30Minutes">Every 30 Minutes</string>
+	<string id="Weather60Minutes">Every 60 Minutes</string>
+</strings>
