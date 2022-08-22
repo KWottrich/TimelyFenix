@@ -14,6 +14,7 @@ class TimelyFenixView extends WatchUi.WatchFace {
 	var initialDraw as Boolean;
 	var weatherFont as FontResource;
 	var weatherChar as String;
+	var weatherColor as Integer;
 	
 	// Cached settings
 	var is24h as Boolean;
@@ -109,6 +110,7 @@ class TimelyFenixView extends WatchUi.WatchFace {
     	if (weather == null || weather.condition == null) {
     		// Missing Weather icon
     	    weatherChar = "A";
+    	    weatherColor = Graphics.COLOR_LT_GRAY;
     	} else {
     		mapWeatherCondToIcon(weather);
     	}
@@ -120,9 +122,11 @@ class TimelyFenixView extends WatchUi.WatchFace {
     		case Weather.CONDITION_UNKNOWN:
     		default:
     			weatherChar = "A";
+    			weatherColor = Graphics.COLOR_LT_GRAY;
     			return;
     		case Weather.CONDITION_HAIL:
     			weatherChar = "B";
+    			weatherColor = Graphics.COLOR_BLUE;
     			return;
     		case Weather.CONDITION_CHANCE_OF_SHOWERS:
     		case Weather.CONDITION_CLOUDY_CHANCE_OF_RAIN:
@@ -135,6 +139,7 @@ class TimelyFenixView extends WatchUi.WatchFace {
     		case Weather.CONDITION_SCATTERED_SHOWERS:
     		case Weather.CONDITION_SHOWERS:
     			weatherChar = "C";
+    			weatherColor = Graphics.COLOR_BLUE;
     			return;
 			case Weather.CONDITION_FOG:
     		case Weather.CONDITION_HAZE:
@@ -144,27 +149,20 @@ class TimelyFenixView extends WatchUi.WatchFace {
     		case Weather.CONDITION_SMOKE:
     		case Weather.CONDITION_VOLCANIC_ASH:
     			weatherChar = "D";
+    			weatherColor = Graphics.COLOR_LT_GRAY;
 				return;
 			case Weather.CONDITION_CHANCE_OF_THUNDERSTORMS:
     		case Weather.CONDITION_SCATTERED_THUNDERSTORMS:
     		case Weather.CONDITION_THUNDERSTORMS:
     			weatherChar = "E";
-    			return;
-    		case Weather.CONDITION_CLEAR:
-    			clockTime = System.getClockTime() as ClockTime;
-    			if (clockTime.hour >= 7 && clockTime.hour <= 20) {
-    				// Daytime
-    				weatherChar = "L";
-    			} else {
-    				// Nighttime
-    				weatherChar = "F";
-    			}
+    			weatherColor = Graphics.COLOR_BLUE;
     			return;
     		case Weather.CONDITION_CLOUDY:
     		case Weather.CONDITION_MOSTLY_CLOUDY:
     		case Weather.CONDITION_THIN_CLOUDS:
     		case Weather.CONDITION_UNKNOWN_PRECIPITATION:
-    			weatherChar = "G";
+    			weatherChar = "F";
+    			weatherColor = Graphics.COLOR_LT_GRAY;
     			return;
     		case Weather.CONDITION_FAIR:
     		case Weather.CONDITION_MOSTLY_CLEAR:
@@ -173,11 +171,12 @@ class TimelyFenixView extends WatchUi.WatchFace {
     			clockTime = System.getClockTime() as ClockTime;
     			if (clockTime.hour >= 7 && clockTime.hour <= 20) {
     				// Daytime
-    				weatherChar = "H";
+    				weatherChar = "G";
     			} else {
     				// Nighttime
-    				weatherChar = "I";
+    				weatherChar = "H";
     			}
+    			weatherColor = Graphics.COLOR_LT_GRAY;
     			return;
 			case Weather.CONDITION_CHANCE_OF_RAIN_SNOW:
     		case Weather.CONDITION_CLOUDY_CHANCE_OF_RAIN_SNOW:
@@ -186,21 +185,36 @@ class TimelyFenixView extends WatchUi.WatchFace {
     		case Weather.CONDITION_LIGHT_RAIN_SNOW:
     		case Weather.CONDITION_SLEET:
     		case Weather.CONDITION_WINTRY_MIX:
-    			weatherChar = "J";
+    			weatherChar = "I";
+    			weatherColor = Graphics.COLOR_BLUE;
     			return;
 			case Weather.CONDITION_ICE:
-				weatherChar = "K";
+    			weatherColor = Graphics.COLOR_BLUE;
+				weatherChar = "J";
 				return;
+    		case Weather.CONDITION_CLEAR:
+    			clockTime = System.getClockTime() as ClockTime;
+    			if (clockTime.hour >= 7 && clockTime.hour <= 20) {
+    				// Daytime
+    				weatherChar = "K";
+    			} else {
+    				// Nighttime
+    				weatherChar = "O";
+    			}
+    			weatherColor = Graphics.COLOR_YELLOW;
+    			return;
 			case Weather.CONDITION_HURRICANE:
     		case Weather.CONDITION_TORNADO:
     		case Weather.CONDITION_TROPICAL_STORM:
-    			weatherChar = "M";
+    			weatherChar = "L";
+    			weatherColor = Graphics.COLOR_LT_GRAY;
     			return;
 			case Weather.CONDITION_DUST:
     		case Weather.CONDITION_SANDSTORM:
     		case Weather.CONDITION_SQUALL:
     		case Weather.CONDITION_WINDY:
-    			weatherChar = "N";
+    			weatherChar = "M";
+    			weatherColor = Graphics.COLOR_LT_GRAY;
     			return;
 			case Weather.CONDITION_CHANCE_OF_SNOW:
     		case Weather.CONDITION_CLOUDY_CHANCE_OF_SNOW:
@@ -210,7 +224,8 @@ class TimelyFenixView extends WatchUi.WatchFace {
     		case Weather.CONDITION_LIGHT_SNOW:
     		case Weather.CONDITION_RAIN_SNOW:
     		case Weather.CONDITION_SNOW:
-    			weatherChar = "O";
+    			weatherChar = "N";
+    			weatherColor = Graphics.COLOR_BLUE;
     			return;
     	}
     }
@@ -332,10 +347,10 @@ class TimelyFenixView extends WatchUi.WatchFace {
 	    	
 	    	initialDraw = false;
         } else {
-	        //if (clockTime.min % weatherUpdatePeriod == 0) {
+	        if (clockTime.min % weatherUpdatePeriod == 0) {
 	            viewUpdateWeather();
 	            reDrawWeather(dc);
-	        //}
+	        }
         	drawTime(dc);
         }
     }
@@ -347,7 +362,7 @@ class TimelyFenixView extends WatchUi.WatchFace {
     }
     
     function drawWeatherIcon(dc as Dc) as Void {
-    	dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+    	dc.setColor(weatherColor, Graphics.COLOR_TRANSPARENT);
     	dc.drawText(113, 6, weatherFont, weatherChar, Graphics.TEXT_JUSTIFY_CENTER);
     }
     
