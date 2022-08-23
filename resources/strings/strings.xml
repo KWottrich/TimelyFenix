@@ -3,6 +3,7 @@
 
     <string id="BackgroundColorTitle">Background Color</string>
     <string id="ForegroundColorTitle">Foreground Color</string>
+    <string id="WeatherUpdatePeriodTitle">Weather Update Frequency</string>
 
     <string id="ColorBlack">Black</string>
     <string id="ColorDarkGray">Dark Gray</string>
@@ -10,6 +11,7 @@
     <string id="ColorWhite">White</string>
     <string id="ColorBlue">Blue</string>
     <string id="ColorRed">Red</string>
+    <string id="ColorSeafoam">Seafoam</string>
     
     <string id="DegreesSymbol">°</string>
     

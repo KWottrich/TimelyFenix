@@ -29,7 +29,6 @@ class TimelyFenixView extends WatchUi.WatchFace {
 	
 	// Cached settings
 	var is24h as Boolean;
-	var foregroundColor as Number;
 	var weatherUpdatePeriod as Number;
 
     function initialize() {
@@ -79,7 +78,7 @@ class TimelyFenixView extends WatchUi.WatchFace {
     	var stats = System.getSystemStats() as Stats;
     	charging = stats.charging as Boolean;
     	batteryPercent = stats.battery.toNumber() as Integer;
-    	foregroundColor = getApp().getProperty("ForegroundColor");
+    	timeLabel.setColor(getApp().getProperty("ForegroundColor"));
     	weatherUpdatePeriod = getApp().getProperty("WeatherUpdatePeriod");
     	updateCalendarValues();
     	initialDraw = true;
@@ -142,12 +141,14 @@ class TimelyFenixView extends WatchUi.WatchFace {
         dc.drawLine(78, 0, 78, 75);
         dc.drawLine(0, 75, 240, 75);
         
+        dc.setClip(35, 162, 171, 44);
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
         dc.fillRectangle((dayOfWeek-1) * 24 + 37, 177, 23, 14);
         
         for (var i = 0; i < 21; i++) {
         	calendarDays[i].draw(dc);
         }
+        dc.clearClip();
     }
     
     function daysPerMonth(month as Integer, year as Integer) as Integer {
@@ -249,7 +250,7 @@ class TimelyFenixView extends WatchUi.WatchFace {
     	var chargingNow = stats.charging as Boolean;
     	var batteryPercentNow = stats.battery.toNumber() as Integer;
     	if (true || batteryPercentNow != batteryPercent || charging != chargingNow) {
-    		dc.setClip(17, 34, 48, 35);
+    		dc.setClip(17, 34, 57, 35);
 	    	batteryLabel.setText(System.getSystemStats().battery.format("%0d")+"%");
 	        dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_TRANSPARENT);
 	        dc.fillRectangle(17, 50, 45, 19);
@@ -268,7 +269,7 @@ class TimelyFenixView extends WatchUi.WatchFace {
 		        if (batteryPercentNow > 25) {
 		        	dc.setColor(Graphics.COLOR_GREEN, Graphics.COLOR_TRANSPARENT);
 		        } else if (batteryPercentNow > 10) {
-		        	dc.setColor(Graphics.COLOR_YELLOW, Graphics.COLOR_TRANSPARENT);
+		        	dc.setColor(0xFFFF00, Graphics.COLOR_TRANSPARENT);
 		        } else {
 		        	dc.setColor(Graphics.COLOR_RED, Graphics.COLOR_TRANSPARENT);
 		        }
