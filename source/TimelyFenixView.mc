@@ -248,7 +248,8 @@ class TimelyFenixView extends WatchUi.WatchFace {
     	var stats = System.getSystemStats() as Stats;
     	var chargingNow = stats.charging as Boolean;
     	var batteryPercentNow = stats.battery.toNumber() as Integer;
-    	if (batteryPercentNow != batteryPercent || charging != chargingNow) {
+    	if (true || batteryPercentNow != batteryPercent || charging != chargingNow) {
+    		dc.setClip(17, 34, 48, 35);
 	    	batteryLabel.setText(System.getSystemStats().battery.format("%0d")+"%");
 	        dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_TRANSPARENT);
 	        dc.fillRectangle(17, 50, 45, 19);
@@ -274,6 +275,7 @@ class TimelyFenixView extends WatchUi.WatchFace {
 	        }
 	        
         	dc.fillRectangle(45, 34, batteryFill, 7);
+        	dc.clearClip();
         	
     		batteryPercent = batteryPercentNow;
         	charging = chargingNow;
