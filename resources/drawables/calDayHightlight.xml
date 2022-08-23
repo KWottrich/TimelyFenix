@@ -1,3 +1,0 @@
-<drawable-list id="CalDayHighlight" x="109" y="187" background="Graphics.COLOR_TRANSPARENT">
-    <shape type="rectangle" width="20" height="14" color="Graphics.COLOR_WHITE"/>
-</drawable-list>
