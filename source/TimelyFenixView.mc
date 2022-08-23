@@ -9,7 +9,7 @@ import Toybox.Time.Gregorian;
 
 class TimelyFenixView extends WatchUi.WatchFace {
 	var degreesSymbol as String;
-	var calendarDays;
+	var calendarDays as Array<Texts>;
 	var dayOfWeek as Integer;
 	var initialDraw as Boolean;
 	var weatherFont as FontResource;
@@ -136,120 +136,6 @@ class TimelyFenixView extends WatchUi.WatchFace {
     	}
     }
     
-    function mapWeatherCondToIcon(weather as CurrentConditions) as Void {
-    	var clockTime as ClockTime;
-    	switch (weather.condition) {
-    		case Weather.CONDITION_UNKNOWN:
-    		default:
-    			weatherChar = "A";
-    			weatherColor = Graphics.COLOR_LT_GRAY;
-    			return;
-    		case Weather.CONDITION_HAIL:
-    			weatherChar = "B";
-    			weatherColor = Graphics.COLOR_BLUE;
-    			return;
-    		case Weather.CONDITION_CHANCE_OF_SHOWERS:
-    		case Weather.CONDITION_CLOUDY_CHANCE_OF_RAIN:
-    		case Weather.CONDITION_DRIZZLE:
-    		case Weather.CONDITION_HEAVY_RAIN:
-    		case Weather.CONDITION_HEAVY_SHOWERS:
-    		case Weather.CONDITION_LIGHT_RAIN:
-    		case Weather.CONDITION_LIGHT_SHOWERS:
-    		case Weather.CONDITION_RAIN:
-    		case Weather.CONDITION_SCATTERED_SHOWERS:
-    		case Weather.CONDITION_SHOWERS:
-    			weatherChar = "C";
-    			weatherColor = Graphics.COLOR_BLUE;
-    			return;
-			case Weather.CONDITION_FOG:
-    		case Weather.CONDITION_HAZE:
-    		case Weather.CONDITION_HAZY:
-    		case Weather.CONDITION_MIST:
-    		case Weather.CONDITION_SAND:
-    		case Weather.CONDITION_SMOKE:
-    		case Weather.CONDITION_VOLCANIC_ASH:
-    			weatherChar = "D";
-    			weatherColor = Graphics.COLOR_LT_GRAY;
-				return;
-			case Weather.CONDITION_CHANCE_OF_THUNDERSTORMS:
-    		case Weather.CONDITION_SCATTERED_THUNDERSTORMS:
-    		case Weather.CONDITION_THUNDERSTORMS:
-    			weatherChar = "E";
-    			weatherColor = Graphics.COLOR_BLUE;
-    			return;
-    		case Weather.CONDITION_CLOUDY:
-    		case Weather.CONDITION_MOSTLY_CLOUDY:
-    		case Weather.CONDITION_THIN_CLOUDS:
-    		case Weather.CONDITION_UNKNOWN_PRECIPITATION:
-    			weatherChar = "F";
-    			weatherColor = Graphics.COLOR_LT_GRAY;
-    			return;
-    		case Weather.CONDITION_FAIR:
-    		case Weather.CONDITION_MOSTLY_CLEAR:
-    		case Weather.CONDITION_PARTLY_CLEAR:
-    		case Weather.CONDITION_PARTLY_CLOUDY:
-    			clockTime = System.getClockTime() as ClockTime;
-    			if (clockTime.hour >= 7 && clockTime.hour <= 20) {
-    				// Daytime
-    				weatherChar = "G";
-    			} else {
-    				// Nighttime
-    				weatherChar = "H";
-    			}
-    			weatherColor = Graphics.COLOR_LT_GRAY;
-    			return;
-			case Weather.CONDITION_CHANCE_OF_RAIN_SNOW:
-    		case Weather.CONDITION_CLOUDY_CHANCE_OF_RAIN_SNOW:
-    		case Weather.CONDITION_FREEZING_RAIN:
-    		case Weather.CONDITION_HEAVY_RAIN_SNOW:
-    		case Weather.CONDITION_LIGHT_RAIN_SNOW:
-    		case Weather.CONDITION_SLEET:
-    		case Weather.CONDITION_WINTRY_MIX:
-    			weatherChar = "I";
-    			weatherColor = Graphics.COLOR_BLUE;
-    			return;
-			case Weather.CONDITION_ICE:
-    			weatherColor = Graphics.COLOR_BLUE;
-				weatherChar = "J";
-				return;
-    		case Weather.CONDITION_CLEAR:
-    			clockTime = System.getClockTime() as ClockTime;
-    			if (clockTime.hour >= 7 && clockTime.hour <= 20) {
-    				// Daytime
-    				weatherChar = "K";
-    			} else {
-    				// Nighttime
-    				weatherChar = "O";
-    			}
-    			weatherColor = Graphics.COLOR_YELLOW;
-    			return;
-			case Weather.CONDITION_HURRICANE:
-    		case Weather.CONDITION_TORNADO:
-    		case Weather.CONDITION_TROPICAL_STORM:
-    			weatherChar = "L";
-    			weatherColor = Graphics.COLOR_LT_GRAY;
-    			return;
-			case Weather.CONDITION_DUST:
-    		case Weather.CONDITION_SANDSTORM:
-    		case Weather.CONDITION_SQUALL:
-    		case Weather.CONDITION_WINDY:
-    			weatherChar = "M";
-    			weatherColor = Graphics.COLOR_LT_GRAY;
-    			return;
-			case Weather.CONDITION_CHANCE_OF_SNOW:
-    		case Weather.CONDITION_CLOUDY_CHANCE_OF_SNOW:
-    		case Weather.CONDITION_FLURRIES:
-    		case Weather.CONDITION_HEAVY_SNOW:
-    		case Weather.CONDITION_ICE_SNOW:
-    		case Weather.CONDITION_LIGHT_SNOW:
-    		case Weather.CONDITION_RAIN_SNOW:
-    		case Weather.CONDITION_SNOW:
-    			weatherChar = "N";
-    			weatherColor = Graphics.COLOR_BLUE;
-    			return;
-    	}
-    }
-    
     function drawCalendar(dc as Dc) as Void {
         // Battery/Weather separators
         dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_BLACK);
@@ -369,12 +255,12 @@ class TimelyFenixView extends WatchUi.WatchFace {
         	dc.fillRectangle(45, 34, 20, 7);
         	
 	        var batteryFill = (batteryPercentNow + 4) / 5;
-	        // Setting label color and drawing label implicitly sets foreground color on dc
 	        if (chargingNow) {
 	        	dc.setColor(Graphics.COLOR_YELLOW, Graphics.COLOR_TRANSPARENT);
         		dc.fillPolygon([[21,52],[18,61],[20,59],[19,67],[24,59],[21,61],[25,52]]);
 	        	batteryLabel.setColor(Graphics.COLOR_BLUE);
 	        	batteryLabel.draw(dc);
+	        	// Drawing label implicitly sets foreground color to label color on dc
 	        } else {
 	        	batteryLabel.setColor(Graphics.COLOR_LT_GRAY);
 	        	batteryLabel.draw(dc);
@@ -395,9 +281,11 @@ class TimelyFenixView extends WatchUi.WatchFace {
     }
     
     function drawTime(dc as Dc) as Void {
-    	dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_BLACK);
-    	dc.fillRectangle(15, 80, 177, 65);
+    	dc.setClip(15, 80, 177, 65);
+    	dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
+    	dc.clear();
     	timeLabel.draw(dc);
+    	dc.clearClip();
     }
     
     function drawWeatherIcon(dc as Dc) as Void {
@@ -412,10 +300,12 @@ class TimelyFenixView extends WatchUi.WatchFace {
     
     function reDrawWeather(dc as Dc) as Void {
     	// Clear weather widget area
-    	dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_BLACK);
-    	dc.fillRectangle(80, 0, 160, 73);
+    	dc.setClip(80, 0, 160, 73);
+    	dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_BLACK);
+    	dc.clear();
     	drawWeatherIcon(dc);
     	drawWeatherValues(dc);
+    	dc.clearClip();
     }
 
     // Called when this View is removed from the screen. Save the
@@ -430,6 +320,120 @@ class TimelyFenixView extends WatchUi.WatchFace {
 
     // Terminate any active timers and prepare for slow updates.
     function onEnterSleep() as Void {
+    }
+    
+    function mapWeatherCondToIcon(weather as CurrentConditions) as Void {
+    	var clockTime as ClockTime;
+    	switch (weather.condition) {
+    		case Weather.CONDITION_UNKNOWN:
+    		default:
+    			weatherChar = "A";
+    			weatherColor = Graphics.COLOR_LT_GRAY;
+    			return;
+    		case Weather.CONDITION_HAIL:
+    			weatherChar = "B";
+    			weatherColor = Graphics.COLOR_BLUE;
+    			return;
+    		case Weather.CONDITION_CHANCE_OF_SHOWERS:
+    		case Weather.CONDITION_CLOUDY_CHANCE_OF_RAIN:
+    		case Weather.CONDITION_DRIZZLE:
+    		case Weather.CONDITION_HEAVY_RAIN:
+    		case Weather.CONDITION_HEAVY_SHOWERS:
+    		case Weather.CONDITION_LIGHT_RAIN:
+    		case Weather.CONDITION_LIGHT_SHOWERS:
+    		case Weather.CONDITION_RAIN:
+    		case Weather.CONDITION_SCATTERED_SHOWERS:
+    		case Weather.CONDITION_SHOWERS:
+    			weatherChar = "C";
+    			weatherColor = Graphics.COLOR_BLUE;
+    			return;
+			case Weather.CONDITION_FOG:
+    		case Weather.CONDITION_HAZE:
+    		case Weather.CONDITION_HAZY:
+    		case Weather.CONDITION_MIST:
+    		case Weather.CONDITION_SAND:
+    		case Weather.CONDITION_SMOKE:
+    		case Weather.CONDITION_VOLCANIC_ASH:
+    			weatherChar = "D";
+    			weatherColor = Graphics.COLOR_LT_GRAY;
+				return;
+			case Weather.CONDITION_CHANCE_OF_THUNDERSTORMS:
+    		case Weather.CONDITION_SCATTERED_THUNDERSTORMS:
+    		case Weather.CONDITION_THUNDERSTORMS:
+    			weatherChar = "E";
+    			weatherColor = Graphics.COLOR_BLUE;
+    			return;
+    		case Weather.CONDITION_CLOUDY:
+    		case Weather.CONDITION_MOSTLY_CLOUDY:
+    		case Weather.CONDITION_THIN_CLOUDS:
+    		case Weather.CONDITION_UNKNOWN_PRECIPITATION:
+    			weatherChar = "F";
+    			weatherColor = Graphics.COLOR_LT_GRAY;
+    			return;
+    		case Weather.CONDITION_FAIR:
+    		case Weather.CONDITION_MOSTLY_CLEAR:
+    		case Weather.CONDITION_PARTLY_CLEAR:
+    		case Weather.CONDITION_PARTLY_CLOUDY:
+    			clockTime = System.getClockTime() as ClockTime;
+    			if (clockTime.hour >= 7 && clockTime.hour <= 20) {
+    				// Daytime
+    				weatherChar = "G";
+    			} else {
+    				// Nighttime
+    				weatherChar = "H";
+    			}
+    			weatherColor = Graphics.COLOR_LT_GRAY;
+    			return;
+			case Weather.CONDITION_CHANCE_OF_RAIN_SNOW:
+    		case Weather.CONDITION_CLOUDY_CHANCE_OF_RAIN_SNOW:
+    		case Weather.CONDITION_FREEZING_RAIN:
+    		case Weather.CONDITION_HEAVY_RAIN_SNOW:
+    		case Weather.CONDITION_LIGHT_RAIN_SNOW:
+    		case Weather.CONDITION_SLEET:
+    		case Weather.CONDITION_WINTRY_MIX:
+    			weatherChar = "I";
+    			weatherColor = Graphics.COLOR_BLUE;
+    			return;
+			case Weather.CONDITION_ICE:
+    			weatherColor = Graphics.COLOR_BLUE;
+				weatherChar = "J";
+				return;
+    		case Weather.CONDITION_CLEAR:
+    			clockTime = System.getClockTime() as ClockTime;
+    			if (clockTime.hour >= 7 && clockTime.hour <= 20) {
+    				// Daytime
+    				weatherChar = "K";
+    			} else {
+    				// Nighttime
+    				weatherChar = "O";
+    			}
+    			weatherColor = Graphics.COLOR_YELLOW;
+    			return;
+			case Weather.CONDITION_HURRICANE:
+    		case Weather.CONDITION_TORNADO:
+    		case Weather.CONDITION_TROPICAL_STORM:
+    			weatherChar = "L";
+    			weatherColor = Graphics.COLOR_LT_GRAY;
+    			return;
+			case Weather.CONDITION_DUST:
+    		case Weather.CONDITION_SANDSTORM:
+    		case Weather.CONDITION_SQUALL:
+    		case Weather.CONDITION_WINDY:
+    			weatherChar = "M";
+    			weatherColor = Graphics.COLOR_LT_GRAY;
+    			return;
+			case Weather.CONDITION_CHANCE_OF_SNOW:
+    		case Weather.CONDITION_CLOUDY_CHANCE_OF_SNOW:
+    		case Weather.CONDITION_FLURRIES:
+    		case Weather.CONDITION_HEAVY_SNOW:
+    		case Weather.CONDITION_ICE_SNOW:
+    		case Weather.CONDITION_LIGHT_SNOW:
+    		case Weather.CONDITION_RAIN_SNOW:
+    		case Weather.CONDITION_SNOW:
+    			weatherChar = "N";
+    			weatherColor = Graphics.COLOR_BLUE;
+    			return;
+    	}
     }
 
 }
