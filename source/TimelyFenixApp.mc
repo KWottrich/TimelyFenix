@@ -25,6 +25,7 @@ class TimelyFenixApp extends Application.AppBase {
 
     // New app settings have been received so trigger a UI update
     function onSettingsChanged() as Void {
+    	_view.forceRedraw();
         WatchUi.requestUpdate();
     }
 
