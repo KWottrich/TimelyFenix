@@ -1,5 +1,7 @@
 <strings>
     <string id="AppName">TimelyFenix</string>
+    
+    <string id="DegreesSymbol">°</string>
 
     <string id="BackgroundColorTitle">Background Color</string>
     <string id="ForegroundColorTitle">Foreground Color</string>
@@ -12,8 +14,6 @@
     <string id="ColorBlue">Blue</string>
     <string id="ColorRed">Red</string>
     <string id="ColorSeafoam">Seafoam</string>
-    
-    <string id="DegreesSymbol">°</string>
     
 	<string id="Weather1Minute">Every Minute</string>
 	<string id="Weather5Minutes">Every 5 Minutes</string>
