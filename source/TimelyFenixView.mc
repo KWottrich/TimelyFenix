@@ -1,4 +1,4 @@
-import Toybox.Application;
+import Toybox.Application.Properties;
 import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.System;
@@ -12,16 +12,18 @@ class TimelyFenixView extends WatchUi.WatchFace {
 	const MASK_AM_PM = 0x400 as Integer;
 	const MASK_CHARGING = 0x80 as Integer;
 
-	var _timestamp as Integer;
-	var _batteryState as Integer;
-	var _weatherFont as FontResource;
-	var _degreesSymbol as String;
-	var _weatherUpdatePeriod as Integer;
-	var _screenBuffer as BufferedBitmap;
-	var _bufferDc as Dc;
+	var _timestamp = 0 as Integer;
+	var _batteryState = 0 as Integer;
+	var _weatherState = 0 as Integer;
+	var _degreesSymbol = 0 as String;
+	var _weatherUpdatePeriod = 0 as Integer;
+	var _screenBuffer = 0 as BufferedBitmap;
+	var _bufferDc = 0 as Dc;
+	
+	var _weatherFont = 0 as FontResource;
 
 	// Cached settings
-	var _foregroundColor as Number;
+	var _foregroundColor = 0 as Number;
 
 	function initialize() {
 		WatchFace.initialize();
@@ -40,12 +42,12 @@ class TimelyFenixView extends WatchUi.WatchFace {
 	function onLayout(dc as Dc) as Void {
 		_degreesSymbol = WatchUi.loadResource(Rez.Strings.DegreesSymbol);
 		_weatherFont = WatchUi.loadResource(Rez.Fonts.WeatherIcons);
-		_weatherUpdatePeriod = getApp().getProperty("WeatherUpdatePeriod");
-		_foregroundColor = getApp().getProperty("ForegroundColor");
+		_weatherUpdatePeriod = Properties.getValue("WeatherUpdatePeriod");
+		_foregroundColor = Properties.getValue("ForegroundColor");
 
 		_screenBuffer = new Graphics.BufferedBitmap({
-			:width  => 235,
-			:height => 225
+			:width  => 226,
+			:height => 218
 		});
 		_bufferDc = _screenBuffer.getDc();
 
@@ -108,7 +110,7 @@ class TimelyFenixView extends WatchUi.WatchFace {
 			drawAmPm(timeInfo, fullDraw);
 		}
 		// Update weather on user-configured interval
-		if ((timeInfo.min % _weatherUpdatePeriod == 0 && timestampNow != _timestamp) || fullDraw) {
+		if ((timeInfo.min % _weatherUpdatePeriod == 0 && timestampNow != _timestamp) || _weatherState == 0 || fullDraw) {
 			// draw weather icon/values to buffer
 			drawWeather(fullDraw);
 		}
@@ -130,12 +132,12 @@ class TimelyFenixView extends WatchUi.WatchFace {
 		}
 
 		// always draw buffer to screen
-		dc.drawBitmap(0, 0, _screenBuffer);
+		dc.drawBitmap(9, 7, _screenBuffer);
 	}
 
 	function drawWeather(fullDraw as Boolean) as Void {
 		var bufferDc = _bufferDc as Dc;
-		bufferDc.setClip(80, 0, 140, 73);
+		bufferDc.setClip(71, 0, 135, 66);
 		bufferDc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_BLACK);
 		if (!fullDraw) {
 			bufferDc.clear();
@@ -143,17 +145,19 @@ class TimelyFenixView extends WatchUi.WatchFace {
 
 		var weather = Weather.getCurrentConditions() as CurrentConditions;
 		if (weather == null || weather.temperature == null) {
-			bufferDc.drawText(199, 45, Graphics.FONT_TINY, "--" + _degreesSymbol + "F", Graphics.TEXT_JUSTIFY_RIGHT);
+			bufferDc.drawText(190, 38, Graphics.FONT_TINY, "--" + _degreesSymbol + "F", Graphics.TEXT_JUSTIFY_RIGHT);
+			_weatherState = 0;
 		} else {
 			// Weather data always comes as Celsius
 			var temperature = celsiusToFahrenheit(weather) as Integer;
-			bufferDc.drawText(199, 45, Graphics.FONT_TINY, temperature + _degreesSymbol + "F", Graphics.TEXT_JUSTIFY_RIGHT);
+			bufferDc.drawText(190, 38, Graphics.FONT_TINY, temperature + _degreesSymbol + "F", Graphics.TEXT_JUSTIFY_RIGHT);
+			_weatherState = 1;
 		}
 
 		if (weather == null || weather.precipitationChance == null) {
-			bufferDc.drawText(196, 24, Graphics.FONT_TINY, "--%", Graphics.TEXT_JUSTIFY_RIGHT);
+			bufferDc.drawText(187, 17, Graphics.FONT_TINY, "--%", Graphics.TEXT_JUSTIFY_RIGHT);
 		} else {
-			bufferDc.drawText(196, 24, Graphics.FONT_TINY, weather.precipitationChance + "%", Graphics.TEXT_JUSTIFY_RIGHT);
+			bufferDc.drawText(187, 17, Graphics.FONT_TINY, weather.precipitationChance + "%", Graphics.TEXT_JUSTIFY_RIGHT);
 		}
 
 		var weatherChar = "A" as String;
@@ -163,7 +167,7 @@ class TimelyFenixView extends WatchUi.WatchFace {
 		} else {
 			weatherChar = getWeatherIcon(weather);
 		}
-		bufferDc.drawText(113, 6, _weatherFont, weatherChar, Graphics.TEXT_JUSTIFY_CENTER);
+		bufferDc.drawText(104, 0, _weatherFont, weatherChar, Graphics.TEXT_JUSTIFY_CENTER);
 
 		bufferDc.clearClip();
 	}
@@ -173,25 +177,25 @@ class TimelyFenixView extends WatchUi.WatchFace {
 		var chargingNow = sysStats.charging as Boolean;
 		var batteryPercentNow = sysStats.battery.toNumber() as Integer;
 
-		bufferDc.setClip(17, 28, 58, 41);
+		bufferDc.setClip(8, 21, 58, 41);
 		bufferDc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_BLACK);
 		if (!fullDraw) {
 			bufferDc.clear();
 		}
 		bufferDc.setPenWidth(2);
-		bufferDc.drawRoundedRectangle(42, 31, 27, 14, 2);
-		bufferDc.drawRectangle(69, 34, 2, 7);
+		bufferDc.drawRoundedRectangle(33, 24, 27, 14, 2);
+		bufferDc.drawRectangle(60, 27, 2, 7);
 		bufferDc.setPenWidth(1);
 
 		var batteryFill = (batteryPercentNow + 4) / 5;
 		if (chargingNow) {
 			bufferDc.setColor(0xFFFF00, Graphics.COLOR_TRANSPARENT);
-			bufferDc.fillPolygon([[21,52],[18,61],[20,59],[19,67],[24,59],[21,61],[25,52]]);
+			bufferDc.fillPolygon([[12,45],[9,54],[11,52],[10,60],[15,52],[12,54],[16,45]]);
 			bufferDc.setColor(Graphics.COLOR_BLUE, Graphics.COLOR_TRANSPARENT);
-			bufferDc.drawText(74, 45, Graphics.FONT_TINY, batteryPercentNow + "%", Graphics.TEXT_JUSTIFY_RIGHT);
+			bufferDc.drawText(65, 38, Graphics.FONT_TINY, batteryPercentNow + "%", Graphics.TEXT_JUSTIFY_RIGHT);
 		} else {
 			bufferDc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
-			bufferDc.drawText(74, 45, Graphics.FONT_TINY, batteryPercentNow + "%", Graphics.TEXT_JUSTIFY_RIGHT);
+			bufferDc.drawText(65, 38, Graphics.FONT_TINY, batteryPercentNow + "%", Graphics.TEXT_JUSTIFY_RIGHT);
 			if (batteryPercentNow > 25) {
 				bufferDc.setColor(Graphics.COLOR_GREEN, Graphics.COLOR_TRANSPARENT);
 			} else if (batteryPercentNow > 10) {
@@ -201,27 +205,27 @@ class TimelyFenixView extends WatchUi.WatchFace {
 			}
 		}
 
-		bufferDc.fillRectangle(45, 34, batteryFill, 7);
+		bufferDc.fillRectangle(36, 27, batteryFill, 7);
 		bufferDc.clearClip();
 	}
 
 	function drawGridLines() as Void {
 		var bufferDc = _bufferDc as Dc;
 		// Battery/Weather separators
-		bufferDc.drawLine(78, 0, 78, 75);
-		bufferDc.drawLine(0, 75, 240, 75);
+		bufferDc.drawLine(69, 0, 69, 68);
+		bufferDc.drawLine(0, 68, 240, 68);
 
 		// Calendar grid
-		bufferDc.drawRectangle(36, 162, 168, 44); // Outer rectangle
-		bufferDc.drawRectangle(36, 177, 168, 15); // Inner row rectangle
-		bufferDc.drawRectangle(60, 162, 25, 44); // 2nd col rectangle
-		bufferDc.drawRectangle(108, 162, 25, 44); // 4th col rectangle
-		bufferDc.drawRectangle(156, 162, 25, 44); // 6th col rectangle
+		bufferDc.drawRectangle(27, 155, 168, 44); // Outer rectangle
+		bufferDc.drawRectangle(27, 170, 168, 15); // Inner row rectangle
+		bufferDc.drawRectangle(51, 155, 25, 44); // 2nd col rectangle
+		bufferDc.drawRectangle(99, 155, 25, 44); // 4th col rectangle
+		bufferDc.drawRectangle(147, 155, 25, 44); // 6th col rectangle
 	}
 
 	function drawTime(timeInfo as Gregorian.Info, fullDraw as Boolean) as Void {
 		var bufferDc = _bufferDc as Dc;
-		bufferDc.setClip(15, 85, 177, 60);
+		bufferDc.setClip(6, 77, 177, 60);
 		bufferDc.setColor(_foregroundColor, Graphics.COLOR_BLACK);
 		// clear time clip in buffer
 		if (!fullDraw) {
@@ -234,14 +238,14 @@ class TimelyFenixView extends WatchUi.WatchFace {
 		} else if (hours == 0) {
 			hours = 12;
 		}
-		bufferDc.drawText(192, 64, Graphics.FONT_NUMBER_THAI_HOT,
+		bufferDc.drawText(183, 57, Graphics.FONT_NUMBER_THAI_HOT,
 			hours + ":" + timeInfo.min.format("%02d"), Graphics.TEXT_JUSTIFY_RIGHT);
 		bufferDc.clearClip();
 	}
 
 	function drawAmPm(timeInfo as Gregorian.Info, fullDraw as Boolean) as Void {
 		var bufferDc = _bufferDc as Dc;
-		bufferDc.setClip(194, 115, 41, 27);
+		bufferDc.setClip(183, 108, 43, 27);
 		bufferDc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_BLACK);
 		// clear time clip in buffer
 		if (!fullDraw) {
@@ -249,9 +253,9 @@ class TimelyFenixView extends WatchUi.WatchFace {
 		}
 		// draw time to buffer
 		if (timeInfo.hour >= 12) {
-			bufferDc.drawText(234, 110, Graphics.FONT_LARGE, "PM", Graphics.TEXT_JUSTIFY_RIGHT);
+			bufferDc.drawText(225, 103, Graphics.FONT_LARGE, "PM", Graphics.TEXT_JUSTIFY_RIGHT);
 		} else {
-			bufferDc.drawText(234, 110, Graphics.FONT_LARGE, "AM", Graphics.TEXT_JUSTIFY_RIGHT);
+			bufferDc.drawText(225, 103, Graphics.FONT_LARGE, "AM", Graphics.TEXT_JUSTIFY_RIGHT);
 		}
 		bufferDc.clearClip();
 	}
@@ -259,14 +263,14 @@ class TimelyFenixView extends WatchUi.WatchFace {
 	function drawCalendar(timeInfo as Gregorian.Info) as Void {
 		var bufferDc = _bufferDc as Dc;
 		// Days of week, with current day highlighted
-		var daysOfWeek = ["Su","Mo","Tu","We","Th","Fr","Sa"] as Array<Strings>;
+		var daysOfWeek = ["Su","Mo","Tu","We","Th","Fr","Sa"] as Array<String>;
 		for (var i = 0 as Integer; i < 7; i++) {
 			if (i+1 == timeInfo.day_of_week) {
 				bufferDc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
 			} else {
 				bufferDc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_TRANSPARENT);
 			}
-			bufferDc.drawText(24*i+48, 145, Graphics.FONT_XTINY, daysOfWeek[i], Graphics.TEXT_JUSTIFY_CENTER);
+			bufferDc.drawText(24*i+39, 138, Graphics.FONT_XTINY, daysOfWeek[i], Graphics.TEXT_JUSTIFY_CENTER);
 		}
 
 		// Previous, current, and next week, with current day inverted
@@ -284,19 +288,19 @@ class TimelyFenixView extends WatchUi.WatchFace {
 				bufferDc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_TRANSPARENT);
 			} else if (dayNum == timeInfo.day) {
 				bufferDc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
-				bufferDc.fillRectangle((i - 7) * 24 + 37, 177, 23, 14);
+				bufferDc.fillRectangle((i - 7) * 24 + 28, 170, 23, 14);
 				bufferDc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_TRANSPARENT);
 			} else {
 				bufferDc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
 			}
-			bufferDc.drawText((i % 7) * 24 + 48, (i / 7) * 14 + 160, Graphics.FONT_XTINY,
+			bufferDc.drawText((i % 7) * 24 + 39, (i / 7) * 14 + 153, Graphics.FONT_XTINY,
 				dayNum.toString(), Graphics.TEXT_JUSTIFY_CENTER);
 		}
 
 		var months = ["January","February","March","April","May","June","July",
-			"August","September","October","November","December"] as Array<Strings>;
+			"August","September","October","November","December"] as Array<String>;
 		bufferDc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
-		bufferDc.drawText(119, 205, Graphics.FONT_XTINY, months[timeInfo.month-1] +
+		bufferDc.drawText(110, 198, Graphics.FONT_XTINY, months[timeInfo.month-1] +
 			" " + timeInfo.day + ", " + timeInfo.year, Graphics.TEXT_JUSTIFY_CENTER);
 	}
 
@@ -315,7 +319,7 @@ class TimelyFenixView extends WatchUi.WatchFace {
 	}
 
 	function getWeatherIcon(weather as CurrentConditions) as String {
-		var clockTime as ClockTime;
+		var clockTime;
 		switch (weather.condition) {
 			case Weather.CONDITION_HAIL:
 				_bufferDc.setColor(Graphics.COLOR_BLUE, Graphics.COLOR_TRANSPARENT);
