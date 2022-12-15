@@ -16,7 +16,6 @@ class TimelyFenixView extends WatchUi.WatchFace {
 	var _batteryState = 0 as Integer;
 	var _weatherState = 0 as Integer;
 	var _degreesSymbol = 0 as String;
-	var _weatherUpdatePeriod = 0 as Integer;
 	var _screenBuffer = 0 as BufferedBitmap;
 	var _bufferDc = 0 as Dc;
 	var _forceRedraw = 0 as Boolean;
@@ -25,6 +24,8 @@ class TimelyFenixView extends WatchUi.WatchFace {
 
 	// Cached settings
 	var _foregroundColor = 0 as Number;
+	var _weatherUpdatePeriod = 0 as Integer;
+	var _12H = true as Boolean;
 	var _xScale = 0 as Number;
 	var _yScale = 0 as Number;
 
@@ -47,6 +48,7 @@ class TimelyFenixView extends WatchUi.WatchFace {
 		_weatherFont = WatchUi.loadResource(Rez.Fonts.WeatherIcons);
 		_weatherUpdatePeriod = Properties.getValue("WeatherUpdatePeriod");
 		_foregroundColor = Properties.getValue("ForegroundColor");
+		_12H = !System.getDeviceSettings().is24Hour;
 		
 		_xScale = (dc.getWidth() - 240) / 20;
 		_yScale = (dc.getHeight() - 240) / 20;
@@ -112,7 +114,7 @@ class TimelyFenixView extends WatchUi.WatchFace {
 			drawCalendar(timeInfo);
 		}
 		// AM/PM Updates
-		if ((timestampNow & MASK_AM_PM != _timestamp & MASK_AM_PM) || fullDraw) {
+		if (_12H && ((timestampNow & MASK_AM_PM != _timestamp & MASK_AM_PM) || fullDraw)) {
 			// draw AM/PM text to buffer
 			drawAmPm(timeInfo, fullDraw);
 		}
@@ -240,22 +242,33 @@ class TimelyFenixView extends WatchUi.WatchFace {
 	}
 
 	function drawTime(timeInfo as Gregorian.Info, fullDraw as Boolean) as Void {
-		var bufferDc = _bufferDc as Dc;
-		bufferDc.setClip(6, 77 + (_yScale * 6), 177 + (_xScale * 14), 60 + (_yScale * 6));
+	    var bufferDc = _bufferDc as Dc;
+		var hours = timeInfo.hour as Integer;
+		var xPosition;
+		var justification;
+		if (_12H) {
+			if (hours > 12) {
+				hours -= 12;
+			} else if (hours == 0) {
+				hours = 12;
+			}
+			xPosition = 183 + (_xScale * 14) as Number;
+			bufferDc.setClip(6, 77 + (_yScale * 6), 177 + (_xScale * 14), 60 + (_yScale * 6));
+			justification = Graphics.TEXT_JUSTIFY_RIGHT as Number;
+		} else {
+			xPosition = 112 + (_xScale * 10) as Number;
+			bufferDc.setClip(26, 77 + (_yScale * 6), 177 + (_xScale * 18), 60 + (_yScale * 6));
+			justification = Graphics.TEXT_JUSTIFY_CENTER as Number;
+		}
+		
 		bufferDc.setColor(_foregroundColor, Graphics.COLOR_BLACK);
 		// clear time clip in buffer
 		if (!fullDraw) {
 			bufferDc.clear();
 		}
 		// draw time to buffer
-		var hours = timeInfo.hour as Integer;
-		if (hours > 12) {
-			hours -= 12;
-		} else if (hours == 0) {
-			hours = 12;
-		}
-		bufferDc.drawText(183 + (_xScale * 14), 57 + (_yScale * 6), Graphics.FONT_NUMBER_THAI_HOT,
-			hours + ":" + timeInfo.min.format("%02d"), Graphics.TEXT_JUSTIFY_RIGHT);
+		bufferDc.drawText(xPosition, 57 + (_yScale * 6), Graphics.FONT_NUMBER_THAI_HOT,
+			hours + ":" + timeInfo.min.format("%02d"), justification);
 		bufferDc.clearClip();
 	}
 
