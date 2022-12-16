@@ -30,6 +30,7 @@ class TimelyFenixView extends WatchUi.WatchFace {
 	var _displayPrecip = false as Boolean;
 	var _displayBTStatus = false as Boolean;
 	var _12H = true as Boolean;
+	var _units = 0 as Integer;
 	var _xScale = 0 as Number;
 	var _yScale = 0 as Number;
 
@@ -74,8 +75,8 @@ class TimelyFenixView extends WatchUi.WatchFace {
 		_batteryState = 0;
 	}
 
-	function celsiusToFahrenheit(weather as CurrentConditions) as Number {
-		return weather.temperature * 9 / 5 + 32;
+	function celsiusToFahrenheit(degreesCelsius as Number) as Number {
+		return degreesCelsius * 9 / 5 + 32;
 	}
 
 	function daysPerMonth(month as Integer, year as Integer) as Integer {
@@ -212,8 +213,16 @@ class TimelyFenixView extends WatchUi.WatchFace {
 			_weatherState = 0;
 		} else {
 			// Weather data always comes as Celsius
-			var temperature = celsiusToFahrenheit(weather) as Integer;
-			bufferDc.drawText(190 + xOffsetText, 38 + yOffset, Graphics.FONT_TINY, temperature + _degreesSymbol + "F", Graphics.TEXT_JUSTIFY_RIGHT);
+			var temperature;
+			var units;
+			if (_units == System.UNIT_METRIC) {
+				temperature = weather.temperature as Integer;
+				units = "C" as String;
+			} else {
+				temperature = celsiusToFahrenheit(weather.temperature) as Integer;
+				units = "F" as String;
+			}
+			bufferDc.drawText(190 + xOffsetText, 38 + yOffset, Graphics.FONT_TINY, temperature + _degreesSymbol + units, Graphics.TEXT_JUSTIFY_RIGHT);
 			_weatherState = 1;
 		}
 
@@ -425,7 +434,9 @@ class TimelyFenixView extends WatchUi.WatchFace {
 		_foregroundColor = Properties.getValue("ForegroundColor");
 		_displayPrecip = Properties.getValue("DisplayPrecipitation");
 		_displayBTStatus = Properties.getValue("DisplayConnectionStatus");
-		_12H = !System.getDeviceSettings().is24Hour;
+		var settings = System.getDeviceSettings() as DeviceSettings;
+		_12H = !settings.is24Hour;
+		_units = settings.temperatureUnits;
 		_forceRedraw = true;
 	}
 
