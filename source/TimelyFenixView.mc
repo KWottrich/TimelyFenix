@@ -25,6 +25,7 @@ class TimelyFenixView extends WatchUi.WatchFace {
 	// Cached settings
 	var _foregroundColor = 0 as Number;
 	var _weatherUpdatePeriod = 0 as Integer;
+	var _displayPrecip = false as Boolean;
 	var _12H = true as Boolean;
 	var _xScale = 0 as Number;
 	var _yScale = 0 as Number;
@@ -46,9 +47,8 @@ class TimelyFenixView extends WatchUi.WatchFace {
 	function onLayout(dc as Dc) as Void {
 		_degreesSymbol = WatchUi.loadResource(Rez.Strings.DegreesSymbol);
 		_weatherFont = WatchUi.loadResource(Rez.Fonts.WeatherIcons);
-		_weatherUpdatePeriod = Properties.getValue("WeatherUpdatePeriod");
-		_foregroundColor = Properties.getValue("ForegroundColor");
-		_12H = !System.getDeviceSettings().is24Hour;
+		
+		refreshSettings();
 		
 		_xScale = (dc.getWidth() - 240) / 20;
 		_yScale = (dc.getHeight() - 240) / 20;
@@ -59,7 +59,7 @@ class TimelyFenixView extends WatchUi.WatchFace {
 		});
 		_bufferDc = _screenBuffer.getDc();
 
-		dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_BLACK);
+		dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_RED);
 		dc.clear();
 	}
 
@@ -168,10 +168,12 @@ class TimelyFenixView extends WatchUi.WatchFace {
 			_weatherState = 1;
 		}
 
-		if (weather == null || weather.precipitationChance == null) {
-			bufferDc.drawText(187 + xOffsetText, 15, Graphics.FONT_TINY, "--%", Graphics.TEXT_JUSTIFY_RIGHT);
-		} else {
-			bufferDc.drawText(187 + xOffsetText, 15, Graphics.FONT_TINY, weather.precipitationChance + "%", Graphics.TEXT_JUSTIFY_RIGHT);
+		if (_displayPrecip) {
+			if (weather == null || weather.precipitationChance == null) {
+				bufferDc.drawText(187 + xOffsetText, 15, Graphics.FONT_TINY, "--%", Graphics.TEXT_JUSTIFY_RIGHT);
+			} else {
+				bufferDc.drawText(187 + xOffsetText, 15, Graphics.FONT_TINY, weather.precipitationChance + "%", Graphics.TEXT_JUSTIFY_RIGHT);
+			}
 		}
 
 		var weatherChar = "A" as String;
@@ -350,7 +352,11 @@ class TimelyFenixView extends WatchUi.WatchFace {
 	function onEnterSleep() as Void {
 	}
 	
-	function forceRedraw() as Void {
+	function refreshSettings() as Void {
+		_weatherUpdatePeriod = Properties.getValue("WeatherUpdatePeriod");
+		_foregroundColor = Properties.getValue("ForegroundColor");
+		_displayPrecip = Properties.getValue("DisplayPrecipitation");
+		_12H = !System.getDeviceSettings().is24Hour;
 		_forceRedraw = true;
 	}
 

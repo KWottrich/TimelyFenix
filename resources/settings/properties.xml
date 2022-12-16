@@ -2,5 +2,6 @@
 
     <property id="ForegroundColor" type="number">0xFFFFFF</property>
     <property id="WeatherUpdatePeriod" type="number">5</property>
+    <property id="DisplayPrecipitation" type="boolean">true</property>
 
 </properties>
