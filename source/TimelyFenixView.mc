@@ -62,7 +62,7 @@ class TimelyFenixView extends WatchUi.WatchFace {
 		});
 		_bufferDc = _screenBuffer.getDc();
 
-		dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_RED);
+		dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_BLACK);
 		dc.clear();
 	}
 
