@@ -7,6 +7,7 @@
     <string id="ForegroundColorTitle">Foreground Color</string>
     <string id="WeatherUpdatePeriodTitle">Weather Update Frequency</string>
     <string id="DisplayPrecipitationTitle">Display Precipitation Chance</string>
+    <string id="DisplayConnectionStatusTitle">Display Connection Status</string>
 
     <string id="ColorBlack">Black</string>
     <string id="ColorDarkGray">Dark Gray</string>

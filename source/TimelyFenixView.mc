@@ -11,10 +11,12 @@ class TimelyFenixView extends WatchUi.WatchFace {
 	const MASK_DATE = 0x7FFFF800 as Integer;
 	const MASK_AM_PM = 0x400 as Integer;
 	const MASK_CHARGING = 0x80 as Integer;
+	const MASK_BATT_BAR = 0x1F00 as Integer;
 
 	var _timestamp = 0 as Integer;
 	var _batteryState = 0 as Integer;
 	var _weatherState = 0 as Integer;
+	var _connectionState = false as Boolean;
 	var _degreesSymbol = 0 as String;
 	var _screenBuffer = 0 as BufferedBitmap;
 	var _bufferDc = 0 as Dc;
@@ -26,6 +28,7 @@ class TimelyFenixView extends WatchUi.WatchFace {
 	var _foregroundColor = 0 as Number;
 	var _weatherUpdatePeriod = 0 as Integer;
 	var _displayPrecip = false as Boolean;
+	var _displayBTStatus = false as Boolean;
 	var _12H = true as Boolean;
 	var _xScale = 0 as Number;
 	var _yScale = 0 as Number;
@@ -107,8 +110,8 @@ class TimelyFenixView extends WatchUi.WatchFace {
 			bufferDc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_BLACK);
 			bufferDc.clear();
 
-			// draw all grid lines to buffer
-			drawGridLines();
+			// draw static elements like grid lines
+			drawStaticElements();
 
 			// draw calendar values to buffer
 			drawCalendar(timeInfo);
@@ -129,19 +132,65 @@ class TimelyFenixView extends WatchUi.WatchFace {
 			_timestamp = timestampNow;
 		}
 
-		var sysStats = System.getSystemStats() as Stats;
-		var batteryStateNow = sysStats.battery.toNumber() as Integer;
-		if (sysStats.charging) {
-			batteryStateNow |= MASK_CHARGING;
-		}
-		if (batteryStateNow != _batteryState || fullDraw) {
-			// draw battery icon/values to buffer
-			drawBattery(sysStats, fullDraw);
-			_batteryState = batteryStateNow;
+		updateBattery(fullDraw);
+		
+		if (_displayBTStatus) {
+			var connected = System.getDeviceSettings().phoneConnected as Boolean;
+			if (connected != _connectionState || fullDraw) {
+				drawConnectionState(connected, fullDraw);
+			}
 		}
 
 		// always draw buffer to screen
 		dc.drawBitmap(9, 7, _screenBuffer);
+	}
+	
+	function updateBattery(fullDraw as Boolean) as Void {
+		var sysStats = System.getSystemStats() as Stats;
+		var batteryStateNow = sysStats.battery.toNumber() as Integer;
+		
+		// Apply battery bar fill % and charging bit to state
+		var batteryBarFillNow = (batteryStateNow + 4) / 5 as Integer;
+		batteryStateNow |= (batteryBarFillNow << 8);
+		if (sysStats.charging) {
+			batteryStateNow |= MASK_CHARGING;
+		}
+		
+		var batteryState = _batteryState as Integer;
+		if (batteryStateNow != batteryState || fullDraw) {
+			// draw battery values to buffer
+			drawBatteryPercent(sysStats, fullDraw);
+			
+			if (batteryBarFillNow != (batteryState & MASK_BATT_BAR) >> 8 || fullDraw) {
+				drawBatteryBar(batteryBarFillNow, fullDraw);
+			}
+			
+			_batteryState = batteryStateNow;
+		}
+	}
+	
+	function drawConnectionState(connected as Boolean, fullDraw as Boolean) as Void {
+	    var bufferDc = _bufferDc as Dc;
+	    var xOffset = _xScale * 14 as Integer;
+	    var yOffset = _yScale * 18 as Integer;
+	    bufferDc.setClip(202 + xOffset, 155 + yOffset, 16, 20);
+	    if (connected) {
+	    	bufferDc.setColor(0x00AAFF, Graphics.COLOR_BLACK);
+	    } else {
+	    	bufferDc.setColor(Graphics.COLOR_RED, Graphics.COLOR_BLACK);
+	    }
+	    if (!fullDraw) {
+			bufferDc.clear();
+		}
+		
+		bufferDc.setPenWidth(2);
+		bufferDc.drawLine(206 + xOffset, 169 + yOffset, 214 + xOffset, 161 + yOffset);
+		bufferDc.drawLine(214 + xOffset, 161 + yOffset, 209 + xOffset, 156 + yOffset);
+		bufferDc.drawLine(209 + xOffset, 156 + yOffset, 209 + xOffset, 174 + yOffset);
+		bufferDc.drawLine(209 + xOffset, 174 + yOffset, 214 + xOffset, 169 + yOffset);
+		bufferDc.drawLine(214 + xOffset, 169 + yOffset, 205 + xOffset, 161 + yOffset);
+		bufferDc.setPenWidth(1);
+		bufferDc.clearClip();
 	}
 
 	function drawWeather(fullDraw as Boolean) as Void {
@@ -188,7 +237,7 @@ class TimelyFenixView extends WatchUi.WatchFace {
 		bufferDc.clearClip();
 	}
 
-	function drawBattery(sysStats as Stats, fullDraw as Boolean) as Void {
+	function drawBatteryPercent(sysStats as Stats, fullDraw as Boolean) as Void {
 		var bufferDc = _bufferDc as Dc;
 		var chargingNow = sysStats.charging as Boolean;
 		var batteryPercentNow = sysStats.battery.toNumber() as Integer;
@@ -196,41 +245,53 @@ class TimelyFenixView extends WatchUi.WatchFace {
 		var xOffset = _xScale * 10 as Number;
 		var yOffset = _yScale * 2 as Number;
 
-		bufferDc.setClip(8, 21 + yOffset, 58 + xOffset, 41 + yOffset);
-		bufferDc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_BLACK);
+		bufferDc.setClip(12 + xOffset, 40 + yOffset, 54, 22 + yOffset);
+		if (chargingNow) {
+			bufferDc.setColor(Graphics.COLOR_GREEN, Graphics.COLOR_BLACK);
+		} else {
+			bufferDc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_BLACK);
+		}
 		if (!fullDraw) {
 			bufferDc.clear();
 		}
-		bufferDc.setPenWidth(2);
-		bufferDc.drawRoundedRectangle(33 + xOffset, 24 + yOffset, 27, 14, 2);
-		bufferDc.drawRectangle(60 + xOffset, 27 + yOffset, 2, 7);
-		bufferDc.setPenWidth(1);
 
-		var batteryFill = (batteryPercentNow + 4) / 5;
-		if (chargingNow) {
-			bufferDc.setColor(Graphics.COLOR_GREEN, Graphics.COLOR_TRANSPARENT);
-		}
 		bufferDc.drawText(65 + xOffset, 38 + yOffset, Graphics.FONT_TINY, batteryPercentNow + "%", Graphics.TEXT_JUSTIFY_RIGHT);
+		bufferDc.clearClip();
+	}
+	
+	function drawBatteryBar(batteryBarFill as Integer, fullDraw as Boolean) as Void {
+		var bufferDc = _bufferDc as Dc;
 		
-		if (batteryPercentNow > 25) {
-			bufferDc.setColor(Graphics.COLOR_GREEN, Graphics.COLOR_TRANSPARENT);
-		} else if (batteryPercentNow > 10) {
-			bufferDc.setColor(0xFFFF00, Graphics.COLOR_TRANSPARENT);
+		var xOffset = _xScale * 10 as Number;
+		var yOffset = _yScale * 2 as Number;
+		
+		if (batteryBarFill > 5) {
+			bufferDc.setColor(Graphics.COLOR_GREEN, Graphics.COLOR_BLACK);
+		} else if (batteryBarFill > 2) {
+			bufferDc.setColor(0xFFFF00, Graphics.COLOR_BLACK);
 		} else {
-			bufferDc.setColor(Graphics.COLOR_RED, Graphics.COLOR_TRANSPARENT);
+			bufferDc.setColor(Graphics.COLOR_RED, Graphics.COLOR_BLACK);
 		}
 
-		bufferDc.fillRectangle(36 + xOffset, 27 + yOffset, batteryFill, 7);
+		bufferDc.setClip(35 + xOffset, 26 + yOffset, 22, 9);
+		if (!fullDraw) {
+			bufferDc.clear();
+		}
+		bufferDc.fillRectangle(36 + xOffset, 27 + yOffset, batteryBarFill, 7);
 		bufferDc.clearClip();
 	}
 
-	function drawGridLines() as Void {
+	function drawStaticElements() as Void {
 		var bufferDc = _bufferDc as Dc;
 		var xFactor = _xScale as Number;
 		var xOffset = xFactor * 10 as Number;
 		var yFactor = _yScale as Number;
 		var yOffsetTop = yFactor * 6 as Number;
 		var yOffsetBottom = yFactor * 18 as Number;
+		var yOffsetBattery = yFactor * 2 as Number;
+		
+		// foreground color is already set to DK_GRAY here
+		
 		// Battery/Weather separators
 		bufferDc.drawLine(69 + xOffset, 0, 69 + xOffset, 68 + yOffsetTop);
 		bufferDc.drawLine(0, 68 + yOffsetTop, 226 + (20 * xFactor), 68 + yOffsetTop);
@@ -241,6 +302,13 @@ class TimelyFenixView extends WatchUi.WatchFace {
 		bufferDc.drawRectangle(51 + xOffset, 155 + yOffsetBottom, 25, 44); // 2nd col rectangle
 		bufferDc.drawRectangle(99 + xOffset, 155 + yOffsetBottom, 25, 44); // 4th col rectangle
 		bufferDc.drawRectangle(147 + xOffset, 155 + yOffsetBottom, 25, 44); // 6th col rectangle
+		
+		// Battery outline
+		bufferDc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_BLACK);
+		bufferDc.setPenWidth(2);
+		bufferDc.drawRoundedRectangle(33 + xOffset, 24 + yOffsetBattery, 27, 14, 2);
+		bufferDc.drawRectangle(60 + xOffset, 27 + yOffsetBattery, 2, 7);
+		bufferDc.setPenWidth(1);
 	}
 
 	function drawTime(timeInfo as Gregorian.Info, fullDraw as Boolean) as Void {
@@ -356,6 +424,7 @@ class TimelyFenixView extends WatchUi.WatchFace {
 		_weatherUpdatePeriod = Properties.getValue("WeatherUpdatePeriod");
 		_foregroundColor = Properties.getValue("ForegroundColor");
 		_displayPrecip = Properties.getValue("DisplayPrecipitation");
+		_displayBTStatus = Properties.getValue("DisplayConnectionStatus");
 		_12H = !System.getDeviceSettings().is24Hour;
 		_forceRedraw = true;
 	}

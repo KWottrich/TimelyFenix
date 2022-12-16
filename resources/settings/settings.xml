@@ -25,4 +25,8 @@
         <settingConfig type="boolean"/>
     </setting>
 
+    <setting propertyKey="@Properties.DisplayConnectionStatus" title="@Strings.DisplayConnectionStatusTitle">
+        <settingConfig type="boolean"/>
+    </setting>
+
 </settings>
