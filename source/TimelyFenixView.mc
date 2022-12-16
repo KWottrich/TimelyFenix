@@ -171,7 +171,7 @@ class TimelyFenixView extends WatchUi.WatchFace {
 	
 	function drawConnectionState(connected as Boolean, fullDraw as Boolean) as Void {
 	    var bufferDc = _bufferDc as Dc;
-	    var xOffset = _xScale * 14 as Integer;
+	    var xOffset = _xScale * 12 as Integer;
 	    var yOffset = _yScale * 18 as Integer;
 	    bufferDc.setClip(202 + xOffset, 155 + yOffset, 16, 20);
 	    if (connected) {
