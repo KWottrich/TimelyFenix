@@ -245,6 +245,7 @@ class TimelyFenixView extends WatchUi.WatchFace {
 	    var bufferDc = _bufferDc as Dc;
 		var hours = timeInfo.hour as Integer;
 		var xPosition;
+		var yOffset = _yScale * 6 as Number;
 		var justification;
 		if (_12H) {
 			if (hours > 12) {
@@ -253,11 +254,11 @@ class TimelyFenixView extends WatchUi.WatchFace {
 				hours = 12;
 			}
 			xPosition = 183 + (_xScale * 14) as Number;
-			bufferDc.setClip(6, 77 + (_yScale * 6), 177 + (_xScale * 14), 60 + (_yScale * 6));
+			bufferDc.setClip(6, 77 + yOffset, 177 + (_xScale * 14), 60 + yOffset);
 			justification = Graphics.TEXT_JUSTIFY_RIGHT as Number;
 		} else {
 			xPosition = 112 + (_xScale * 10) as Number;
-			bufferDc.setClip(26, 77 + (_yScale * 6), 177 + (_xScale * 18), 60 + (_yScale * 6));
+			bufferDc.setClip(26, 77 + yOffset, 177 + (_xScale * 18), 60 + yOffset);
 			justification = Graphics.TEXT_JUSTIFY_CENTER as Number;
 		}
 		
@@ -267,7 +268,7 @@ class TimelyFenixView extends WatchUi.WatchFace {
 			bufferDc.clear();
 		}
 		// draw time to buffer
-		bufferDc.drawText(xPosition, 57 + (_yScale * 6), Graphics.FONT_NUMBER_THAI_HOT,
+		bufferDc.drawText(xPosition, 57 + yOffset, Graphics.FONT_NUMBER_THAI_HOT,
 			hours + ":" + timeInfo.min.format("%02d"), justification);
 		bufferDc.clearClip();
 	}
