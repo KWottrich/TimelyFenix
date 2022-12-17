@@ -139,6 +139,7 @@ class TimelyFenixView extends WatchUi.WatchFace {
 			var connected = System.getDeviceSettings().phoneConnected as Boolean;
 			if (connected != _connectionState || fullDraw) {
 				drawConnectionState(connected, fullDraw);
+				_connectionState = connected;
 			}
 		}
 
