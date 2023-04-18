@@ -29,7 +29,7 @@
         <settingConfig type="boolean"/>
     </setting>
 
-	<setting propertyKey="@Properties.GridDisplay" title="@Strings.WeatherUpdatePeriodTitle">
+	<setting propertyKey="@Properties.GridDisplay" title="@Strings.GridDisplayTitle">
         <settingConfig type="list">
             <listEntry value="0">@Strings.GridLinesNone</listEntry>
             <listEntry value="1">@Strings.GridLinesCalendar</listEntry>
