@@ -8,6 +8,7 @@
     <string id="WeatherUpdatePeriodTitle">Weather Update Frequency</string>
     <string id="DisplayPrecipitationTitle">Display Precipitation Chance</string>
     <string id="DisplayConnectionStatusTitle">Display Connection Status</string>
+    <string id="GridDisplayTitle">Display Grid Lines</string>
 
     <string id="ColorBlack">Black</string>
     <string id="ColorDarkGray">Dark Gray</string>
@@ -24,4 +25,9 @@
 	<string id="Weather20Minutes">Every 20 Minutes</string>
 	<string id="Weather30Minutes">Every 30 Minutes</string>
 	<string id="Weather60Minutes">Every 60 Minutes</string>
+
+	<string id="GridLinesNone">None</string>
+	<string id="GridLinesCalendar">Calendar Only</string>
+	<string id="GridLinesLayout">Layout Only</string>
+	<string id="GridLinesAll">Calendar and Layout</string>
 </strings>

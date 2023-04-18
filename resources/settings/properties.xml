@@ -4,5 +4,6 @@
     <property id="WeatherUpdatePeriod" type="number">5</property>
     <property id="DisplayPrecipitation" type="boolean">true</property>
     <property id="DisplayConnectionStatus" type="boolean">true</property>
+	<property id="GridDisplay" type="number">3</property>
 
 </properties>

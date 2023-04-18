@@ -29,4 +29,13 @@
         <settingConfig type="boolean"/>
     </setting>
 
+	<setting propertyKey="@Properties.GridDisplay" title="@Strings.WeatherUpdatePeriodTitle">
+        <settingConfig type="list">
+            <listEntry value="0">@Strings.GridLinesNone</listEntry>
+            <listEntry value="1">@Strings.GridLinesCalendar</listEntry>
+            <listEntry value="2">@Strings.GridLinesLayout</listEntry>
+            <listEntry value="3">@Strings.GridLinesAll</listEntry>
+        </settingConfig>
+    </setting>
+
 </settings>

@@ -29,7 +29,9 @@ class TimelyFenixView extends WatchUi.WatchFace {
 	var _weatherUpdatePeriod = 0 as Integer;
 	var _displayPrecip = false as Boolean;
 	var _displayBTStatus = false as Boolean;
+	var _gridLines = 3 as Integer;
 	var _12H = true as Boolean;
+	var _FirstDayOfWeek = Gregorian.DAY_SUNDAY as Integer;
 	var _units = 0 as Integer;
 	var _xScale = 0 as Number;
 	var _yScale = 0 as Number;
@@ -299,19 +301,24 @@ class TimelyFenixView extends WatchUi.WatchFace {
 		var yOffsetTop = yFactor * 6 as Number;
 		var yOffsetBottom = yFactor * 18 as Number;
 		var yOffsetBattery = yFactor * 2 as Number;
+		var gridLines = _gridLines as Integer;
 		
 		// foreground color is already set to DK_GRAY here
 		
 		// Battery/Weather separators
-		bufferDc.drawLine(69 + xOffset, 0, 69 + xOffset, 68 + yOffsetTop);
-		bufferDc.drawLine(0, 68 + yOffsetTop, 226 + (20 * xFactor), 68 + yOffsetTop);
+		if (gridLines > 1) {
+			bufferDc.drawLine(69 + xOffset, 0, 69 + xOffset, 68 + yOffsetTop);
+			bufferDc.drawLine(0, 68 + yOffsetTop, 226 + (20 * xFactor), 68 + yOffsetTop);
+		}
 
 		// Calendar grid
-		bufferDc.drawRectangle(27 + xOffset, 155 + yOffsetBottom, 168, 44); // Outer rectangle
-		bufferDc.drawRectangle(27 + xOffset, 170 + yOffsetBottom, 168, 15); // Inner row rectangle
-		bufferDc.drawRectangle(51 + xOffset, 155 + yOffsetBottom, 25, 44); // 2nd col rectangle
-		bufferDc.drawRectangle(99 + xOffset, 155 + yOffsetBottom, 25, 44); // 4th col rectangle
-		bufferDc.drawRectangle(147 + xOffset, 155 + yOffsetBottom, 25, 44); // 6th col rectangle
+		if (gridLines % 2 == 1) {
+			bufferDc.drawRectangle(27 + xOffset, 155 + yOffsetBottom, 168, 44); // Outer rectangle
+			bufferDc.drawRectangle(27 + xOffset, 170 + yOffsetBottom, 168, 15); // Inner row rectangle
+			bufferDc.drawRectangle(51 + xOffset, 155 + yOffsetBottom, 25, 44); // 2nd col rectangle
+			bufferDc.drawRectangle(99 + xOffset, 155 + yOffsetBottom, 25, 44); // 4th col rectangle
+			bufferDc.drawRectangle(147 + xOffset, 155 + yOffsetBottom, 25, 44); // 6th col rectangle
+		}
 		
 		// Battery outline
 		bufferDc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_BLACK);
@@ -376,18 +383,20 @@ class TimelyFenixView extends WatchUi.WatchFace {
 		var yOffset = _yScale * 18 as Number;
 		// Days of week, with current day highlighted
 		var daysOfWeek = ["Su","Mo","Tu","We","Th","Fr","Sa"] as Array<String>;
+		var firstDayOfWeek = _FirstDayOfWeek;
 		for (var i = 0 as Integer; i < 7; i++) {
-			if (i+1 == timeInfo.day_of_week) {
+			var day = (firstDayOfWeek - 1 + i) % 7;
+			if (day + 1 == timeInfo.day_of_week) {
 				bufferDc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
 			} else {
 				bufferDc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_TRANSPARENT);
 			}
-			bufferDc.drawText(24*i+39+xOffset, 138 + yOffset, Graphics.FONT_XTINY, daysOfWeek[i], Graphics.TEXT_JUSTIFY_CENTER);
+			bufferDc.drawText(24*i+39+xOffset, 138 + yOffset, Graphics.FONT_XTINY, daysOfWeek[day], Graphics.TEXT_JUSTIFY_CENTER);
 		}
 
 		// Previous, current, and next week, with current day inverted
 		// Arrange days on calendar view
-		var firstDateShown = timeInfo.day - timeInfo.day_of_week - 6 as Integer;
+		var firstDateShown = timeInfo.day - 7 - ((7 - firstDayOfWeek + timeInfo.day_of_week) % 7) as Integer;
 		var currentMonthDays = daysPerMonth(timeInfo.month, timeInfo.year) as Integer;
 		var prevMonthDays = daysPerMonth(timeInfo.month-1, timeInfo.year) as Integer;
 		for (var i = 0 as Integer; i < 21; i++) {
@@ -435,8 +444,10 @@ class TimelyFenixView extends WatchUi.WatchFace {
 		_foregroundColor = Properties.getValue("ForegroundColor");
 		_displayPrecip = Properties.getValue("DisplayPrecipitation");
 		_displayBTStatus = Properties.getValue("DisplayConnectionStatus");
+		_gridLines = Properties.getValue("GridDisplay");
 		var settings = System.getDeviceSettings() as DeviceSettings;
 		_12H = !settings.is24Hour;
+		_FirstDayOfWeek = settings.firstDayOfWeek;
 		_units = settings.temperatureUnits;
 		_forceRedraw = true;
 	}
