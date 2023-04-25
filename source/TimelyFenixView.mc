@@ -59,10 +59,15 @@ class TimelyFenixView extends WatchUi.WatchFace {
 		_xScale = (dc.getWidth() - 240) / 20;
 		_yScale = (dc.getHeight() - 240) / 20;
 
-		_screenBuffer = new Graphics.BufferedBitmap({
+		var bufOptions = {
 			:width  => 226 + (20 * _xScale),
 			:height => 218 + (20 * _yScale)
-		});
+		};
+		if (Graphics has :createBufferedBitmap) {
+	        _screenBuffer =  Graphics.createBufferedBitmap(bufOptions).get();
+	    } else {
+	        _screenBuffer =  new Graphics.BufferedBitmap(bufOptions);
+	    }
 		_bufferDc = _screenBuffer.getDc();
 
 		dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_BLACK);
