@@ -150,7 +150,9 @@ class TimelyFenixView extends WatchUi.WatchFace {
 			}
 		}
 
-		// always draw buffer to screen
+		// always clear and draw buffer to screen
+		dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_BLACK);
+		dc.clear();
 		dc.drawBitmap(9, 7, _screenBuffer);
 	}
 	
