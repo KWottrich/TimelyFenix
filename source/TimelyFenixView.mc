@@ -23,6 +23,7 @@ class TimelyFenixView extends WatchUi.WatchFace {
 	var _forceRedraw = 0 as Boolean;
 	
 	var _weatherFont = 0 as FontResource;
+	var _timeFont = 0 as FontResource;
 
 	// Cached settings
 	var _foregroundColor = 0 as Number;
@@ -56,8 +57,16 @@ class TimelyFenixView extends WatchUi.WatchFace {
 		
 		refreshSettings();
 		
-		_xScale = (dc.getWidth() - 240) / 20;
+		var dcWidth = dc.getWidth();
+		_xScale = (dcWidth - 240) / 20;
 		_yScale = (dc.getHeight() - 240) / 20;
+		if (dcWidth == 240) {
+			_timeFont = WatchUi.loadResource(Rez.Fonts.RajdhaniBoldMono_240);
+		} else if (dcWidth == 260) {
+			_timeFont = WatchUi.loadResource(Rez.Fonts.RajdhaniBoldMono_260);
+		} else if (dcWidth == 280) {
+			_timeFont = WatchUi.loadResource(Rez.Fonts.RajdhaniBoldMono_280);
+		}
 
 		var bufOptions = {
 			:width  => 226 + (20 * _xScale),
@@ -150,7 +159,9 @@ class TimelyFenixView extends WatchUi.WatchFace {
 			}
 		}
 
-		// always draw buffer to screen
+		// always clear screen, then draw buffer
+		dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_BLACK);
+		dc.clear();
 		dc.drawBitmap(9, 7, _screenBuffer);
 	}
 	
@@ -360,8 +371,8 @@ class TimelyFenixView extends WatchUi.WatchFace {
 			bufferDc.clear();
 		}
 		// draw time to buffer
-		bufferDc.drawText(xPosition, 57 + yOffset, Graphics.FONT_NUMBER_THAI_HOT,
-			hours + ":" + timeInfo.min.format("%02d"), justification);
+		//bufferDc.drawText(xPosition, 57 + yOffset, Graphics.FONT_NUMBER_THAI_HOT, hours + ":" + timeInfo.min.format("%02d"), justification);
+		bufferDc.drawText(xPosition, 57 + yOffset, _timeFont, "10:32", justification);
 		bufferDc.clearClip();
 	}
 
