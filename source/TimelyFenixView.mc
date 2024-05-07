@@ -226,10 +226,10 @@ class TimelyFenixView extends WatchUi.WatchFace {
 			var temperature;
 			var units;
 			if (_units == System.UNIT_METRIC) {
-				temperature = weather.temperature as Integer;
+				temperature = weather.temperature.toNumber();
 				units = "C" as String;
 			} else {
-				temperature = celsiusToFahrenheit(weather.temperature) as Integer;
+				temperature = celsiusToFahrenheit(weather.temperature).toNumber();
 				units = "F" as String;
 			}
 			bufferDc.drawText(190 + xOffsetText, 38 + yOffset, Graphics.FONT_TINY, temperature + _degreesSymbol + units, Graphics.TEXT_JUSTIFY_RIGHT);
